@@ -1,0 +1,55 @@
+{% extends 'yucemed/base.html' %}
+{% block content %}
+    <div>基础信息</div>
+    <li><a> {{ patient.id}}</a>
+    <a> {{ patient.patientname}}</a>
+    <a> {{ patient.age }}</a>
+    <a> {{ patient.gender }}</a>
+    <a> {{ patient.infostatus }}</a>
+    <a> {{ patient.samplestatus }}</a></li>
+    <div>详细信息</div>
+    <div>
+        {% for info in infos %}
+        <li>
+        <a>{{ info.tumortype }}|</a>
+        <a>{{ info.level }}|</a>
+        {% empty %}
+        <a>请修改详细信息</a>
+    {% endfor %}
+    </li>
+    </div>
+    <div>项目信息</div>
+    <div>
+    <li>
+        <a>项目编号|</a>
+        <a>产品编号|</a>
+        <a>项目截止时间|</a>
+        <a>项目持续时间|</a>
+        <a>项目状态|</a>
+
+    </li>
+    {% for project in projects %}
+    <li>
+        <a href={% url 'yucemed:projectdetail' project.projectid  %}>{{ project.projectid }}|</a>
+        <a>{{ project.product }}|</a>
+        <a>{{ project.deadline }}|</a>
+        <a>{{ project.duration }}|</a>
+        <a>{{ project.status }}|</a>
+    </li>
+        {% empty %}
+        <a>暂无项目，请先下单</a>
+    {% endfor %}
+    </div>
+    <div>添加病人详细信息</div>>
+    <div><form action={% url "yucemed:addinfo" patient_id %} method="post">
+    {% csrf_token %}
+    {{ infoform }}
+    <input type="submit" value="Submit" />
+    </form></div>
+    <div>下单</div>
+    <div><form action={% url "yucemed:addproject" patient_id %} method="post">
+    {% csrf_token %}
+    {{ projectform }}
+    <input type="submit" value="Submit" />
+    </form></div>
+{% endblock %}

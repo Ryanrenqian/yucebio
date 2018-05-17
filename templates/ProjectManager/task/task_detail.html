@@ -1,0 +1,79 @@
+{% extends 'ProjectManager/base.html' %}
+{% block content %}
+    <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">任务信息</div>
+                <div class="muted pull-right"><a href={% url 'projectmanager:project_add_task' project %}>添加任务</a></div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in taskcolumns%}
+                                <td> {{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                                <tr class="info">
+                                    <td>{{ task}}</td>
+                                    <td>{{ task.product}}</td>
+                                    <td>{{ task.patient}}</td>
+                                <td>{{ task.status}}</td>
+                                    <td>{{ task.anastatus}}</td>
+                                    <td>{{ task.expstatus}}</td>
+                                    <td>{{ task.jiedu_status}}</td>
+                                    <td><a>{{ task.patient}}</a></td>
+                                    <td>
+                                        <a href={% url 'projectmanager:task_pause_lab' task %}>实验暂停</a>
+                                        <a href={% url 'projectmanager:task_reset' task%}>重置</a>
+                                        <a href={% url 'projectmanager:task_stop' task %}>中止</a>
+                                        <a href={% url 'projectmanager:task_pause_ana' task %}>分析暂停</a>
+                                        <a href={% url 'projectmanager:task_pause_jiedu' task %}>解读暂停</a>
+                                        <a href={% url 'projectmanager:declare_ana' task%}>取消分析</a>
+                                        <a href={% url 'projectmanager:declare_jiedu' task %}>取消解读</a>
+                                        <a href={% url 'projectmanager:declare_lab' task %}>取消实验</a>
+                                    </td>
+                                </tr>
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">下单信息</div>
+                <div class="muted pull-right"><a href={% url 'projectmanager:project_add_task' project %}>添加任务</a></div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in productcolumns%}
+                                <td> {{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                                <tr class="info">
+                                    <td>{{ task.product}}</td>
+                                    <td><a>{{ task.starttime}}</a></td>
+                                    <td><a>{{ task.bestuptime}}</a></td>
+                                    <td><a>{{ task.worstuptime}}</a></td>
+                                    <td>{{ task.product.normaltype}}</td>
+                                    <td><a>{{ task.product.normalsize}}</a></td>
+                                    <td><a>{{ task.product.tumortype}}</a></td>
+                                    <td><a>{{ task.product.tumorsize}}</a></td>
+                                    <td>{{ task.product.platform}}</td>
+                                    <td><a>{{ task.product.chip}}</a></td>
+                                    <td><a>{{ task.product.strategy}}</a></td>
+                                    <td><a>{{ task.product.moletag}}</a></td>
+                                </tr>
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+{% endblock %}

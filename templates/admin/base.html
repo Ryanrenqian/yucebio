@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block list %}
+        <li class="active">
+            <a href={% url 'admin:project_index'  %}><i class="icon-chevron-right"></i> 项目管理</a>
+        </li>
+        <li class="active">
+            <a href={% url 'admin:product_index' %}><i class="icon-chevron-right"></i> 产品管理</a>
+        </li>
+
+        <li class="active">
+            <a href={% url 'admin:patient_index' %}><i class="icon-chevron-right"></i> 患者管理</a>
+        </li>
+
+        <li class="active">
+            <a href={% url 'admin:user_index'  %}><span class="badge badge-success pull-right">731</span> 用户管理</a>
+        </li>
+        <li class="active">
+            <a href={% url 'admin:group_index' %}><span class="badge badge-success pull-right">812</span> 群组管理</a>
+        </li>
+
+
+{% endblock %}
+{% block content %}
+
+{% endblock %}

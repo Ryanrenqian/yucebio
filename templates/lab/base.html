@@ -1,0 +1,19 @@
+{% extends 'base1.0.html' %}
+
+{% block list %}
+        <li class="active">
+            <a href={% url 'lab:index'  %}><i class="icon-chevron-right"></i> 首页</a>
+            <a href={% url 'lab:task_index' 'index' %}><i class="icon-chevron-right"></i> 任务总览</a>
+            <a href={% url 'lab:task_index' 'gogo' %}><i class="icon-chevron-right"></i> 正在进行中任务</a>
+            <a href={% url 'lab:task_index' 'pause' %}><i class="icon-chevron-right"></i> 已暂停任务</a>
+            <a href={% url 'lab:task_index' 'init'%}>待进行任务</a>
+            <a href={% url 'lab:patient_index'%}><i class="icon-chevron-right"></i> 患者列表</a>
+            <a href={% url 'lab:sample_index'  %}><i class="icon-chevron-right"></i> 样本列表</a>
+            <a href={% url 'lab:search'  %}><i class="icon-chevron-right"></i> 信息检索</a>
+        </li>
+
+
+{% endblock %}
+{% block content %}
+
+{% endblock %}

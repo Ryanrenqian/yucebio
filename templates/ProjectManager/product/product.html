@@ -1,0 +1,43 @@
+{% extends 'ProjectManager/base.html' %}
+{% block content %}
+        <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">患者详细信息<a href={% url 'projectmanager:product_add'%}>添加产品</a></div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in columns%}
+                                <td> {{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for product in product_list %}
+                                <tr class="info">
+                                    <td>{{ product }}</td>
+                                    <td>{{ product.productname }}</td>
+                                    <td>{{ product.book }}</td>
+                                <td>{{ product.config }}</td>
+                                <td>{{ product.period }}</td>
+                                <td>{{ product.normaltype }}</td>
+                                <td>{{ product.normalsize }}</td>
+                                <td>{{ product.tumortype }}</td>
+                                <td>{{ product.tumorsize }}</td>
+                                <td>{{ product.platform }}</td>
+                                <td>{{ product.bestuptime }}</td>
+                                <td>{{ product.worstuptime }}</td>
+                                <td>{{ product.chip }}</td>
+                                <td>{{ product.strategy }}</td>
+                                <td>{{ product.moletag }}</td>
+                                <td><a href={% url 'projectmanager:product_modify' product %}>修改产品</a></td>
+                                </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+{% endblock %}

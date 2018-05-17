@@ -1,0 +1,48 @@
+{% extends 'yucemed/base.html' %}
+{% block content %}
+    <div class="row-fluid">
+        <!-- block -->
+        <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">共有{{ product_list|length }}个产品</div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                          <table class="table table-striped">
+      <thead>
+      <tr>
+            {% for column in columns %}
+                <th> {{ column }}</th>
+            {% endfor %}
+      </tr>
+      </thead>
+      <tbody>
+        {% for product in product_list %}
+            <tr>
+            <td> {{ product}}</td>
+            <td> {{ product.productname}}</td>
+            <td> {{ product.config}}</td>
+            <td> {{ product.period}}</td>
+                </tr>
+
+        {% empty %}
+            <tr>无</tr>
+            <div><a>暂未收录产品，请先添加</a></div>
+        {% endfor %}
+      </tbody>
+    </table>
+                </div>
+            </div>
+        </div>
+        <!-- /block -->
+    </div>
+
+
+
+    <div>添加产品</div>
+    <div><form action={% url "yucemed:addproduct"  %} method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" />
+    </form></div>
+{% endblock %}

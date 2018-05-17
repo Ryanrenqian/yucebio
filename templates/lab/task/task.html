@@ -1,0 +1,62 @@
+{% extends 'lab/base.html' %}
+{% block content %}
+    <div class="row-fluid">
+        <!-- block -->
+        <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">共有 {{ task_list|length }} 个任务</div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in columns%}
+                                <td> {{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for task in task_list %}
+                            {% if task.status == '暂停' %}
+                            <tr class="warning">
+                            {% elif task.status == '终止' %}
+                            <tr class="error">
+                            {% else %}
+                                <tr class="info">
+                                {% endif %}
+                        <td>{{ task }}</td>
+                            <td>{{ task.expstatus}}</td>
+                            <td>{{ task.expstatus}}</td>
+                         <td><a>{{ task.product}}</a></td>
+                            <td>{{ task.tumortype}}</td>
+                                    <td><a>{{ task.patient}}</a></td>
+                                    <td><a>{{ task.starttime}}</a></td>
+                                    <td><a>{{ task.bestuptime}}</a></td>
+                                     <td><a>{{ task.worstuptime}}</a></td>
+                            <td><a>{{ task.product.normaltype}}</a></td>
+                            <td><a>{{ task.product.normalsize}}</a></td>
+                            <td><a>{{ task.product.tumortype}}</a></td>
+                            <td><a>{{ task.product.tumorsize}}</a></td>
+                            <td><a>{{ task.product.chip}}</a></td>
+                            <td><a>{{ task.product.strategy}}</a></td>
+                            <td><a>{{ task.product.moletag}}</a></td>
+                                    <td>
+                                        <a href={% url 'lab:pause_task' task %}>暂停</a>
+                                        <a href={% url 'lab:reset_task' task%}>重置</a>
+                                        <a href={% url 'lab:process_task' task %}>进行</a>
+                                        <a href={% url 'lab:submitted_task' task %}>完成</a>
+                                    </td>
+        </tr>
+    {% empty %}
+        <tr><td>无</td></tr>
+        <div><a>暂无任务收录</a></div>
+    {% endfor %}
+
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- /block -->
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'lab/base.html' %}
+{% block content %}
+    {{ reminder }}
+    <div class="navbar navbar-inner block-header">{{ title }}
+    <div><form action={{ url }} method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" />
+    </form></div></div>
+{% endblock %}

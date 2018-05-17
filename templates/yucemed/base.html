@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block list %}
+        <li class="active">
+            <a href={% url 'yucemed:project' 'index' %}><i class="icon-chevron-right"></i> 项目管理</a>
+        </li>
+        <li class="active">
+            <a href={% url 'yucemed:product' %}><i class="icon-chevron-right"></i> 产品管理</a>
+        </li>
+
+        <li class="active">
+            <a href={% url 'yucemed:patient' 'index' %}><i class="icon-chevron-right"></i> 病人管理</a>
+        </li>
+        <li class="active">
+            <a href={% url 'yucemed:patient' 'unorder' %}><span class="badge badge-success pull-right">731</span> 待下单</a>
+        </li>
+
+        <li class="active">
+            <a href={% url 'yucemed:project' 'checkorder' %}><span class="badge badge-success pull-right">731</span> 待审核订单</a>
+        </li>
+        <li class="active">
+            <a href={% url 'yucemed:project' 'unanalyse' %}><span class="badge badge-success pull-right">812</span> 待分析</a>
+        </li>
+        <li class="active">
+            <a href={% url 'yucemed:project' 'unparse' %}><span class="badge badge-success pull-right">812</span> 待解读</a>
+        </li>
+        <li class="active">
+            <a href={% url 'yucemed:project' 'checkrecord' %}><span class="badge badge-success pull-right">812</span> 待审核报告</a>
+        </li>
+
+{% endblock %}
+{% block content %}
+
+{% endblock %}

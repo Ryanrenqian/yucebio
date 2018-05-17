@@ -1,0 +1,5 @@
+{% extends 'yucemed/project/project.html' %}
+{% block operate %}
+    <td><a href={% url 'yucemed:ordercheck' project.id %}>通过</a>|<a href={% url 'yucemed:pause' project.id %}>拒绝</a></td>
+
+{% endblock %}

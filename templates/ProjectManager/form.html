@@ -1,0 +1,18 @@
+{% extends 'ProjectManager/base.html' %}
+
+{% block content %}
+    {{ reminder }}
+    <div class="navbar navbar-inner block-header">{{ title }}
+    <div>
+        {% if form.is_multipart %}
+            <form enctype="multipart/form-data" method="post">
+        {% else %}
+            <form method="post" action={{ url }}>
+        {% endif %}
+
+{#        <form action={{ url }} method="post">#}
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit" />
+    </form></div></div>
+{% endblock %}

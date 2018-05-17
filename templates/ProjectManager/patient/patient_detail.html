@@ -1,0 +1,105 @@
+{% extends 'ProjectManager/base.html' %}
+{% block content %}
+    <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">患者基础信息</div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in columns%}
+                                <td> {{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                                <tr class="info">
+                                    <td><a>{{ patient.pk}}</a></td>
+                                <td><a>{{ patient.patientname}}</a></td>
+                                <td><a>{{ patient.age}}</a></td>
+                                <td><a>{{ patient.gender}}</a></td>
+                                <td><a>{{ patient.tumortype}}</a></td>
+                                    <td>{{ patient.infostatus}}</td>
+                                    <td>{{ patient.samplestatus}}</td>
+                                    <td>{{ patient.taskstatus }}</td>
+                                    <td><a href={% url 'projectmanager:patient_order' patient %}>下单</a></td>
+                                </tr>
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">患者详细信息</div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in infocolumns%}
+                                <td> {{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                                <tr class="info">
+                                    <td><a>{{ patient.level}}</a></td>
+                                <td><a>{{ patient.relative}}</a></td>
+                                <td><a>{{ patient.smoker}}</a></td>
+                                <td><a>{{ patient.PDL1}}</a></td>
+                                <td><a>{{ patient.MSIMMR}}</a></td>
+                                    <td>{{ patient.sugery}}</td>
+                                    <td>{{ patient.chemshistory}}</td>
+                                    <td>{{ patient.targethistory}}</td>
+                                    <td>{{ patient.immuhistory}}</td>
+                                    <td>{{ patient.immudrug}}</td>
+                                    <td>{{ patient.immutime}}</td>
+                                    <td>{{ patient.explant}}</td>
+                                    <td>{{ patient.explanttime}}</td>
+                                </tr>
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">患者样本信息</div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in samplecolumns%}
+                                <td> {{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for sample in sample_list %}
+                                <tr class="info">
+                                    <td>{{ sample}}</td>
+                                <td>{{ sample.kind}}</td>
+                                <td>{{ sample.tissue}}</td>
+                                <td>{{ sample.receive}}</td>
+                                <td>{{ sample.status}}</td>
+                                <td>{{ sample.receiver}}</td>
+                                </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <div>添加或修改病人详细信息</div>
+    <div><form action={% url "projectmanager:patient_detail" patient  %} method="post">
+    {% csrf_token %}
+    {{ infoform }}
+    <input type="submit" value="Submit" />
+    </form></div>
+{% endblock %}

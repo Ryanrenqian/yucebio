@@ -1,0 +1,46 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+    <div class="row-fluid">
+        <!-- block -->
+        <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">共有 {{ project_list|length }} 个病人</div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in columns%}
+                                <td> {{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for patient in patient_list %}
+                                <tr class="info">
+                                <td>{{ patient }}</td>
+                                    <td>{{ patient.patientname }}</td>
+                                    <td>{{ patient.age }}</td>
+                                    <td>{{ patient.gender }}</td>
+                                <td><a href={% url 'admin:delete_patient' patient %}>删除</a>
+                                    <a href={% url 'admin:modify_patient' patient %}>修改</a>
+                                    <td/>
+        </tr>
+    {% empty %}
+        <tr><td>无</td></tr>
+        <div><a>暂无病人，请添加</a></div>
+    {% endfor %}
+
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- /block -->
+    <div class="navbar navbar-inner block-header">添加病人
+    <div><form action={% url "admin:add_patient" %} method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" />
+{% endblock %}

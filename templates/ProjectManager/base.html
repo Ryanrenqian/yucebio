@@ -1,0 +1,16 @@
+{% extends 'base1.0.html' %}
+
+{% block list %}
+        <li class="active">
+            <a href={% url 'projectmanager:index'  %}><i class="icon-chevron-right"></i> 首页</a>
+            <a href={% url 'projectmanager:project_index' %}><i class="icon-chevron-right"></i> 项目总览</a>
+            <a href={% url 'projectmanager:task_index'%}><i class="icon-chevron-right"></i> 任务总览</a>
+            <a href={% url 'projectmanager:patient_index'%}><i class="icon-chevron-right"></i> 患者管理</a>
+            <a href={% url 'projectmanager:product_index' %}><i class="icon-chevron-right"></i> 产品管理</a>
+            <a href={% url 'projectmanager:search'  %}><i class="icon-chevron-right"></i> 信息检索</a>
+        </li>
+
+{% endblock %}
+{% block content %}
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'yucemed/base.html' %}
+{% block content %}
+    <div class="row-fluid">
+        <!-- block -->
+        <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">共有 {{ patient_list|length }} 例病人</div>
+            </div>
+            <div class="block-content collapse in">
+                <div class="span12">
+                <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            {% for column in columns%}
+                                <th> {{ column }}</th>
+                            {% endfor %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for patient in patient_list %}
+                            <tr>
+                                <td> <a href={% url 'yucemed:patientdetail' patient.patientid %}>{{ patient}}</a></td>
+                                <td> {{ patient.patientname}}</td>
+                                <td> {{ patient.age }}</td>
+                                <td> {{ patient.gender }}</td>
+                                <td> {{ patient.infostatus }}</td>
+                                <td> {{ patient.samplestatus }}</td>
+                                <td>{{ patient.projectstatus }}</td>
+                            </tr>
+
+                        {% empty %}
+                            <td>无</td>
+                            <div><a>暂无该类型病人，请等待实验室添加</a></div>
+                        {% endfor %}
+
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- /block -->
+    </div>
+
+
+
+{% endblock %}
