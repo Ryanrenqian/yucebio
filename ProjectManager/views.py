@@ -4,10 +4,12 @@ from .models import *
 from .forms import *
 import pandas as pd
 import datetime,random,string,os,json
+from django.views.decorators.csrf import csrf_exempt
+import logging
 # Create your views here.
 # creat Index for all your need
 # 工具函数
-
+logging.basicConfig(level=logging.DEBUG,filename='log.txt')
 def projectGenerate():
     ran_str = ''.join(random.sample(string.ascii_letters + string.digits, 8))
     while True:
@@ -19,12 +21,12 @@ def projectGenerate():
     return ran_str,form
 
 def GenerateID(database):
-    ran_str = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+    ran_str = ''.join(random.sample(string.ascii_letters + string.digits, 10))
     while True:
         if len(database.objects(projectid=ran_str))==0:
             break
         else:
-            ran_str = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+            ran_str = ''.join(random.sample(string.ascii_letters + string.digits, 10))
     return ran_str
 
 # 保存上传数据
@@ -41,11 +43,12 @@ def index(request):
 
 # 项目列表
 def project_index(request):
-    if request.session.get('message',None):
-        message=request.session.pop('message')
-    else:
-        message={}
-    columns='项目编号 项目状态 项目负责人 开始日期 剩余时间 截止日期 完成时间 延迟状态 项目操作'.split()
+    # if request.session.get('message',None):
+    #     message=request.session.pop('message')
+    # else:
+    #     message={}
+    # columns='项目编号 项目状态 项目负责人 开始日期 剩余时间 截止日期 完成时间 延迟状态 项目操作'.split()
+    message={}
     project_list = Project.objects().all()
     for project in project_list:
         if project.status not in ['提交','暂停'] :
@@ -56,51 +59,67 @@ def project_index(request):
                 project.save()
             except Exception as e:
                 message['error']=e
+    project_list=json.loads(project_list.to_json(ensure_ascii=False))
+    for i in project_list:
+        i['projectid']=i['_id']
     # return render(request,'ProjectManager/project/project.html',locals())
-    return HttpResponse(project_list.to_json(ensure_ascii=False))
+    return HttpResponse(json.dumps(project_list,ensure_ascii=False))
 # 添加项目
 # 直接添加项目
 def add_project(request):
     message={}
-    url=reverse('projectmanager:add_project')
+    # url=reverse('projectmanager:add_project')
     if request.method=='POST':
-        form=AddProject(request.POST)
-        if form.is_valid():
-            try:
-                form.cleaned_data['patients']=form.cleaned_data['patients'].split()
-                if len(Project.objects(projectid=form.cleaned_data['projectid']))==0:
-                    try:
-                        project=Project(**form.cleaned_data)
-                        tasks=[]
-                        for product in project.products:
-                            for patient in project.patients:
-                                patient=Patient.objects(pk=patient)
-                                try:
-                                    patient.modify(taskstatus='有')
-                                    task=Task(product=product,patient=patient,status='暂停',expstatus='暂停',anastatus='暂停',jiedu_status='暂停',reportstatus='暂停')
-                                    task.save()
-                                    tasks.append(task)
-                                except Exception as e:
-                                    message['error'] = e
-                        request.session['message'] = message
-                        project.modify(tasks=tasks)
-                        project.save()
-                        message['success'] = '保存成功'
-                        if request.session.get('ref',None):
-                            return redirect(request.session['ref'])
-                        else:
-                            return redirect(reverse('projectmanager:project_detail' ,args=[form.cleaned_data['projectid']]))
-                    except Exception as e:
-                        message['error'] = e
-                else:
-                    message['warning']='该项目已存在，请刷新获取新的项目编号'
-            except Exception as e:
+        # form=AddProject(request.POST)
+        data=json.loads(request.body.decode('utf-8'))
+        # if form.is_valid():
+        try:
+            data['patients']=data['patients'].split()
+            if len(Project.objects(projectid=data['projectid']))==0:
+                try:
+                    project=Project(**data)
+                    tasks=[]
+                    for product in project.products:
+                        for patient in project.patients:
+                            patient=Patient.objects(pk=patient)
+                            try:
+                                patient.modify(taskstatus='有')
+                                taskid=GenerateID(Task)
+                                task=Task(pk=taskid,product=product,patient=patient,status='暂停',expstatus='暂停',anastatus='暂停',jiedu_status='暂停',reportstatus='暂停')
+                                task.save()
+                                tasks.append(task)
+                            except Exception as e:
+                                message['error'] = e
+                    project.modify(tasks=tasks)
+                    project.save()
+                    message['success'] = '保存成功'
+                    url=reverse('projectmanager:project_detail' ,args=[data['projectid']])
+                    message['url']=url
+                except Exception as e:
+                    message['error'] = e
+            else:
+                message['warning']='该项目已存在，请刷新获取新的项目编号'
+        except Exception as e:
                 message['error']=e
-        else:
-            message['warning']='请检查表格'
-    title='添加项目'
-    ran_str,form = projectGenerate()
-    return render(request,'ProjectManager/form.html',locals())
+        # else:
+        #     message['warning']='请检查表格'
+        return HttpResponse(json.dumps(message,ensure_ascii=False))
+    data={}
+    projectid=GenerateID(Project)
+    product_list = json.loads(Product.objects().all().to_json(ensure_ascii=False))
+    for i in product_list:
+        i['productid'] = i['_id']
+    user_list=json.loads(User.objects().all().to_json(ensure_ascii=False))
+    for i in user_list:
+        i['account'] = i['_id']
+    data['projectid']=projectid
+    data['product_list']=product_list
+    data['user_list']=user_list
+    return HttpResponse(json.dumps(data,ensure_ascii=False))
+    # title='添加项目'
+    # ran_str,form = projectGenerate()
+    # return render(request,'ProjectManager/form.html',locals())
+
 
 # 从Excel表格导入  需要修改
 def add_project_excel(request):
@@ -330,30 +349,32 @@ def patient_index(request):
     columns='患者编号 患者姓名 患者年龄 患者性别 患者信息状态 患者样本状态 癌种  操作'.split()
     patient_list = Patient.objects().all()
     # return render(request,'ProjectManager/patient/patient.html',locals())
-    return HttpResponse(patient_list.to_json(ensure_ascii=False))
+    patient_list=json.loads(patient_list.to_json(ensure_ascii=False))
+    for i in patient_list:
+        i['patientid']=i['_id']
+    return HttpResponse(json.dumps(patient_list,ensure_ascii=False))
 
+#@csrf_exempt
 def add_patient(request):
-    url=reverse('projectmanager:add_patient')
+    # url=reverse('projectmanager:add_patient')
     message = {}
-    title='添加病人'
+    # title='添加病人'
+    logging.debug(request.body.decode('utf-8'))
     if request.method == 'POST':
-        form = AddPatient(request.POST)
-        if form.is_valid():
-            if len(Patient.objects(patientid=form.cleaned_data['patientid'])) == 0:
-                try:
-                    patient= Patient(**form.cleaned_data)
-                    patient.save()
-                    message['success'] = '保存成功'
-                    return redirect(reverse('projectmanager:patient_detail',args=[patient]))
-                except Exception as e:
-                    message['error'] = e
-            else:
-                message['warning'] = '该患者编号已存在'
+        data=json.loads(request.body.decode('utf-8'))
+        if len(Patient.objects(**data)) == 0:
+            try:
+                patient= Patient(**data)
+                patient.save()
+                message['success'] = '保存成功'
+                # return redirect(reverse('projectmanager:patient_detail',args=[patient]))
+            except Exception as e:
+                message['error'] = e
         else:
-            message['warning'] = '请检查表格'
-    form = AddPatient()
-    return render(request, 'ProjectManager/form.html', locals())
-    # return HttpResponse(json.dumps(message,ensure_ascii=False))
+            message['warning'] = '该患者编号已存在'
+    # form = AddPatient()
+    # return render(request, 'ProjectManager/form.html', locals())
+    return HttpResponse(json.dumps(message,ensure_ascii=False))
 
 
 def patient_order(request,patient):
@@ -514,9 +535,11 @@ def task_index(request):
         message=request.session.pop('message')
     title='任务管理'
     columns='任务编号 任务产品 患者编号 患者姓名 任务状态 分析状态 实验状态 解读状态 操作'.split()
-    task_list = Task.objects().all()
+    task_list = json.loads(Task.objects().all().to_json(ensure_ascii=False))
+    for i in task_list:
+        i['taskid']=i['_id']
     # return render(request, 'ProjectManager/task/task_index.html', locals())
-    return HttpResponse(task_list.to_json(ensure_ascii=False))
+    return HttpResponse(json.dumps(task_list,ensure_ascii=False))
 ## 任务细节
 def task_detail(request,task):
     task=Task.objects(pk=task).first()
@@ -664,27 +687,36 @@ def task_distribute(request):
 def product_index(request):
     if request.session.get('message',None):
         message=request.session.pop('message')
-    title='产品管理'
-    columns='产品编号 产品名称 产品手册 产品配置 产品周期 样本类型（control）' \
-            '	测序数据量（control）	样本类型（case）	测序数据量（case）	' \
-            '技术平台	 最优上机周期 最晚上机周期 生产芯片	  测序策略	分子标签建库 操作'.split()
-    product_list=Product.objects().all()
+    # title='产品管理'
+    # columns='产品编号 产品名称 产品手册 产品配置 产品周期 样本类型（control）' \
+    #         '	测序数据量（control）	样本类型（case）	测序数据量（case）	' \
+    #         '技术平台	 最优上机周期 最晚上机周期 生产芯片	  测序策略	分子标签建库 操作'.split()
+    product_list=json.loads(Product.objects().all().to_json(ensure_ascii=False))
+    for i in product_list:
+        i['productid']=i['_id']
     # request.session['ref']=reverse('projectmanager:product_index')
     # return render(request,'ProjectManager/product/product.html',locals())
-    return HttpResponse(product_list.to_json(ensure_ascii=False))
+    return HttpResponse(json.dumps(product_list,ensure_ascii=False))
+
 
 def product_add(request):
     message={}
     if request.method=="POST":
-        data=AddProduct(request.POST)
-        if data.is_valid():
-            try:
-                product=Product(**data.cleaned_data)
-                product.save()
-                message['sucess']='产品保存/修改成功'
-            except Exception as e:
-                message['error']=e
-        else:
-            message['error']='请检查内容'
+        logging.debug('add_product:'+request.body.decode('utf-8'))
+        # data=AddProduct(request.POST)
+        # if data.is_valid():
+        data=json.loads(request.body.decode('utf-8'))
+        data.pop('_id')
+        data.pop('isSelected')
+        try:
+            product=Product(**data)
+            product.save()
+            message['sucess']='产品保存/修改成功'
+        except Exception as e:
+            message['error']=str(e)
+        # else:
+        #     message['error']='请检查内容'
+    else:
+        message['warning'] = '请POST数据'
     return HttpResponse(json.dumps(message,ensure_ascii=False))
 

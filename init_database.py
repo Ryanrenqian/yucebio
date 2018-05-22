@@ -1,4 +1,5 @@
 from mongoengine import *
+import pandas as pd
 connect('test')
 # Create your models here.
 
@@ -198,3 +199,22 @@ user=User(account='renqian',name='任前',email='renqian@yucebio.com')
 user.save()
 patient=Patient(patientid='000001',patientname='编号001',age=18,gender='女')
 patient.save()
+product=Product(productid='MT1000',
+                productname='YuceOne Plus',
+                period=5,
+                normaltype = '血液',
+                normalsize='0.25g',
+                tumortype='癌组织',
+                platform='illumulia',
+                bestuptime=2,
+                worstuptime=4,
+                chip='target',
+                strategy='151',
+                moletag='否')
+product.save()
+data=pd.read_excel('tmp/批量上传患者信息20180509.xlsx',header=0,dtype=str)
+for i in data.index:
+    row=data.loc[i].to_dict()
+    Patient(**row).save()
+
+

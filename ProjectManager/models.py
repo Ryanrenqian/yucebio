@@ -115,6 +115,7 @@ class Sample(Document):
         data=''
 # 任务
 class Task(Document):
+    id=StringField(primary_key=True)
     product=ReferenceField(Product)
     patient=ReferenceField(Patient)
     tumor=StringField(null=True)
