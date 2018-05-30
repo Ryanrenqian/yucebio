@@ -2,47 +2,29 @@ from mongoengine import *
 connect('test')
 # Create your models here.
 
+# 群组
+class Group(Document):
+    name=StringField(primary_key=True)
+    def __str__(self):
+        return self.name
 
 # 用户
 class User(Document):
-    '''
-    账户
-    姓名
-    地区
-    邮箱
-    电话
-    部门
-    '''
     account=StringField(primary_key=True)
+    password=StringField()
     name = StringField()
     region=StringField()
     email=StringField()
     telephone=StringField()
-    department=StringField()
+    group=ReferenceField(Group)
     def __str__(self):
         return self.account
 
 # 产品
 class Product(Document):
-    '''
-    产品编号
-    产品名称
-    产品手册（存储位置）
-    产品周期（时长）
-    样本类型（control）
-    测序数据量（control）
-    样本类型（case）
-    测序数据量（case）
-    技术平台
-    最优上机时间
-    最迟上机时间
-    生产芯片
-    测序策略
-    分子标签建库
-    '''
     productid = StringField(max_length=20, primary_key=True)
     productname = StringField(max_length=30)
-    book=StringField(null=True)
+    book=StringField()
     config = StringField(max_length=30)
     period = IntField()
     normaltype = StringField(null=True)
@@ -61,41 +43,26 @@ class Product(Document):
 
 # 患者
 class Patient(Document):
-    '''
-    患者编号
-    患者姓名
-    癌种
-    年龄
-    性别
-    信息添加状态
-    样本添加状态
-    任务添加状态
-    肿瘤分级
-    家族患癌史
-    吸烟程度
-    是否做过PDL1表达
-    MSIMMR
-    '''
     patientid=StringField(max_length=30,primary_key=True)
     patientname=StringField(max_length=30)
     tumortype = StringField(null=True)
     age=IntField()
-    gender=StringField(null=True)
-    infostatus=StringField(default='无')
-    samplestatus = StringField(default='无')
-    taskstatus = StringField(default='无')
+    gender=StringField(choices=['female','male'])
+    infostatus=StringField(default='无',choices=['有','无'])
+    samplestatus = StringField(default='无',choices=['有', '无'])
+    taskstatus = StringField(default='无',choices=['有', '无'])
     level=StringField(null=True)
-    relative=StringField(null=True)
-    smoker=StringField(null=True)
-    PDL1=StringField(null=True)
-    MSIMMR=StringField(null=True)
-    sugery=StringField(null=True)
-    chemshistory=StringField(null=True)
-    targethistory=StringField(null=True)
-    immuhistory=StringField(null=True)
+    relative=StringField(choices=['未知','否','是'],null=True)
+    smoker=StringField(null=True,choices=['未知','不吸烟','轻度','重度'])
+    PDL1=StringField(choices=['未知','是','否'],null=True)
+    MSIMMR=StringField(choices=['未知','否','是'],null=True)
+    sugery=StringField(choices=['未知','否','是'],null=True)
+    chemshistory=StringField(null=True,choices=['未知','无','术后辅助','一线','二线','三线'])
+    targethistory=StringField(null=True,choices=['未知','无','有'])
+    immuhistory=StringField(null=True,choices=['未知','有','无'])
     immudrug=StringField(null=True)
     immutime=DateTimeField(null=True)
-    explant=StringField(null=True)
+    explant=StringField(null=True,choices=['未知','有','无'])
     explanttime=DateTimeField(null=True)
     def __str__(self):
         return self.patientid
@@ -111,14 +78,13 @@ class Sample(Document):
     receivestatus=StringField(default='已收样')
     def __str__(self):
         return self.pk
-    def dict(self):
-        data=''
+
 # 任务
 class Task(Document):
-    id=StringField(primary_key=True)
-    product=ReferenceField(Product)
-    patient=ReferenceField(Patient)
-    tumor=StringField(null=True)
+    taskid=StringField(primary_key=True)
+    product=ReferenceField(Product,null=True)
+    patient=ReferenceField(Patient,null=True)
+    tumortype=StringField(null=True)
     starttime=DateTimeField(null=True)
     bestuptime=DateTimeField(null=True)
     worstuptime=DateTimeField(null=True)
@@ -141,9 +107,9 @@ class Task(Document):
 # 项目
 class Project(Document):
     projectid=StringField(primary_key=True)
-    tag=StringField(default='检测',choices=['科研','检测'])
-    products = ListField(ReferenceField(Product))
-    patients= ListField(ReferenceField(Patient))
+    tag=StringField(default='检测',null=True)
+    products = ListField(ReferenceField(Product),null=True)
+    patients= ListField(ReferenceField(Patient),null=True)
     tasks=ListField(ReferenceField(Task),null=True)
     institute=StringField(null=True)
     duty=ReferenceField(User,null=True)

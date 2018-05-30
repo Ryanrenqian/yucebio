@@ -81,8 +81,10 @@ class Sample(Document):
 
 # 任务
 class Task(Document):
-    product=ReferenceField(Product)
-    patient=ReferenceField(Patient)
+    taskid=StringField(primary_key=True)
+    product=ReferenceField(Product,null=True)
+    patient=ReferenceField(Patient,null=True)
+    tumortype=StringField(null=True)
     starttime=DateTimeField(null=True)
     bestuptime=DateTimeField(null=True)
     worstuptime=DateTimeField(null=True)
@@ -98,13 +100,14 @@ class Task(Document):
     data=StringField(null=True)
     report=StringField(null=True)
     info=StringField(null=True)
+    extrainfo=StringField(null=True)
     def __str__(self):
         return str(self.pk)
 
 # 项目
 class Project(Document):
     projectid=StringField(primary_key=True)
-    tag=StringField(default='检测',choices=['科研','检测'])
+    tag=StringField(default='检测',null=True)
     products = ListField(ReferenceField(Product))
     patients= ListField(ReferenceField(Patient))
     tasks=ListField(ReferenceField(Task),null=True)

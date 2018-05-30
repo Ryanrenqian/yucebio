@@ -13,46 +13,39 @@ def index(request):
     return render(request,'lab/index.html',locals())
 
 # 任务管理
-def task_index(request,key):
-    columns='任务编号 任务状态 实验状态 产品编号 癌种 患者编号 开始时间 最优上机时间 最坏下机时间 样本类型（control） 测序数据量（control）	样本类型（case）	测序数据量（case）	技术平台	生产芯片	测序策略	分子标签建库 操作'.split()
-    if request.session.get('message',None):
-        message=request.session.pop('message')
-        title='任务总览'
-        task_list=Task.objects().all()
-    products={}
-    for product in Product.objects().all():
-        value=product.to_mongo().to_dict()
-        value.pop('bestuptime')
-        value.pop('worstuptime')
-        value.pop('book')
-        value.pop('period')
-        products[value.pop('_id')]=value
-    tasks=[]
+def task_index(request):
+    task_list=json.loads(Task.objects().all().to_json(ensure_ascii=False))
+    product_list = json.loads(Product.objects().all().to_json(ensure_ascii=False))
+    product_dict={}
+    for product in product_list:
+        product_dict[product['_id']]=product
     for task in task_list:
-        task=json.loads(task.to_json(ensure_ascii=False))
-        task.update(products[task['product']])
-        task['_id']=task['_id']['$oid']
-        task['bestuptime']=task['bestuptime']['$date']
-        task['deadline']=task['deadline']['$date']
-        tasks.append(task)
-
-    return HttpResponse(json.dumps(tasks,ensure_ascii=False))
+        task['starttime']=datetime.datetime.fromtimestamp(task['starttime']).strftime('"%Y-%m-%d %H:%M:%S')
+        task['bestuptime'] = datetime.datetime.fromtimestamp(task['bestuptime']).strftime('"%Y-%m-%d %H:%M:%S')
+        task['worstuptime'] = datetime.datetime.fromtimestamp(task['worstuptime']).strftime('"%Y-%m-%d %H:%M:%S')
+        task['product']=product_dict[task['product']]
+    return HttpResponse(json.dumps(task_list,ensure_ascii=False))
     # request.session['ref']=reverse('lab:task_index',args=[key])
     # return render(request,'lab/task/task.html',locals())
 
-def process_task(request,task):
+# 进行任务
+def process_task(request):
     message={}
-    try:
-        task = Task.objects(pk=task).first()
-        task.modify(status='进行',expstatus='进行')
-        message['success']='操作成功'
-    except Exception as e:
-        message['error']=e
-    if request.session.get('ref', None):
-        return redirect(request.session.pop('ref'))
-    else:
-        return redirect(reverse('lab:task_index', args=['index']))
+    if request.method=='POST':
+        data=json.loads(request.body.decode('utf-8'))
+        task = Task.objects(pk=data['taskid']).first()
+        try:
+            task.modify(status='进行',expstatus='进行')
+            message['success']='操作成功'
+        except Exception as e:
+            message['error']=e
+    return HttpResponse(json.dumps(message, ensure_ascii=False))
+    # if request.session.get('ref', None):
+    #     return redirect(request.session.pop('ref'))
+    # else:
+    #     return redirect(reverse('lab:task_index', args=['index']))
 
+#完成任务
 def submitted_task(request,task):
     url=reverse('lab:submitted_task',args=[task])
     if request.session.get('message',None):
@@ -76,63 +69,67 @@ def submitted_task(request,task):
     form=SubmitTask()
     return render(request,'lab/form.html',locals())
 
+# 暂停任务
 def pause_task(request):
-    if request.session.get('message',None):
-        message=request.session.pop('message')
-    else:
-        message={}
-        request.session['message']=message
-
-    if request.method=='POST':
-        data=PauseTask(request.POST)
-        if data.is_valid():
-            try:
-                task = Task.objects(pk=data.cleaned_data['task']).first()
-                task.modify(status='暂停',expstatus='暂停',**data.cleaned_data)
-                message['success']='暂停成功'
-                if request.session.get('ref',None):
-                    return redirect(request.session.pop('ref'))
-                else:
-                    return redirect(reverse('lab:task_index',args=['index']))
-            except Exception as e:
-                message['error']='操作失败'
-    url=reverse('lab:pause_task',args=[task])
-    form=PauseTask()
-    return render(request,'lab/form.html',locals())
-
-def up_task(request,task):
     message={}
-    request.session['message'] = message
-    task=Task.objects(pk=task)
-    try:
-        task.modify(expstatus='上机')
-    except Exception as e:
-        message['error']=e
-    if request.session.get('ref', None):
-        return redirect(request.session.pop('ref'))
-    else:
-        return redirect(reverse('lab:task_index', args=['index']))
+    if request.method=='POST':
+        data=json.loads(request.body.decode('utf-8'))
+        task = Task.objects(pk=data['taskid']).first()
+        info = task.info
+        try:
+            task = Task.objects(pk=data.cleaned_data['task']).first()
+            task.modify(status='暂停',expstatus='暂停',**data.cleaned_data)
+            message['success']='暂停成功'
+            if request.session.get('ref',None):
+                return redirect(request.session.pop('ref'))
+            else:
+                return redirect(reverse('lab:task_index',args=['index']))
+        except Exception as e:
+            message['error']='操作失败'
+    return HttpResponse(json.dumps(message, ensure_ascii=False))
 
+
+# 任务上机
+def up_task(request,task):
+    message = {}
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        task = Task.objects(pk=data['taskid']).first()
+        try:
+            task.modify(expstatus='上机')
+        except Exception as e:
+            message['error']=e
+    return HttpResponse(json.dumps(message, ensure_ascii=False))
+    # if request.session.get('ref', None):
+    #     return redirect(request.session.pop('ref'))
+    # else:
+    #     return redirect(reverse('lab:task_index', args=['index']))
+
+# 重置实验
 def reset_task(request,task):
     message={}
-    request.session['message']=message
-    task = Task.objects(pk=task).first()
-    starttime=datetime.datetime.now()
-    deadline=datetime.datetime.now()+datetime.timedelta(days=task.product.period)
-    bestuptime=datetime.datetime.now()+datetime.timedelta(days=task.product.bestuptime)
-    worstuptime=datetime.datetime.now()+datetime.timedelta(days=task.product.worstuptime)
-    try:
-        task.modify(
-            starttime=starttime,deadline=deadline,
-            bestuptime=bestuptime,worstuptime=worstuptime,
-            status='开始',expstatus='开始')
-        message['success']='重置成功'
-    except Exception as e:
-        message['error']= e
-    if request.session.get('ref', None):
-        return redirect(request.session.pop('ref'))
-    else:
-        return redirect(reverse('lab:task_index', args=['index']))
+    if request.method=='POST':
+        data=json.loads(request.body.decode('utf-8'))
+        task=Task.objects(pk=data['taskid']).first()
+        info=task.info
+        info += data['info']
+        starttime=datetime.datetime.now()
+        deadline=datetime.datetime.now()+datetime.timedelta(days=task.product.period)
+        bestuptime=datetime.datetime.now()+datetime.timedelta(days=task.product.bestuptime)
+        worstuptime=datetime.datetime.now()+datetime.timedelta(days=task.product.worstuptime)
+        try:
+            task.modify(
+                starttime=starttime,deadline=deadline,
+                bestuptime=bestuptime,worstuptime=worstuptime,
+                status='开始',expstatus='开始')
+            message['success']='重置成功'
+        except Exception as e:
+            message['error']= e
+    return HttpResponse(json.dumps(message, ensure_ascii=False))
+    # if request.session.get('ref', None):
+    #     return redirect(request.session.pop('ref'))
+    # else:
+    #     return redirect(reverse('lab:task_index', args=['index']))
 
 # 患者列表
 def patient_index(request):

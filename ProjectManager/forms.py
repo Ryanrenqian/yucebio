@@ -1,6 +1,6 @@
 from django import forms
 from .models import *
-from datetime import datetime
+import datetime
 
 class Addinfo(forms.Form):
     tumortype = forms.CharField(label='肿瘤类型')
@@ -14,9 +14,9 @@ class Addinfo(forms.Form):
     targethistory = forms.ChoiceField(label='靶向史',choices=[('未知','未知'),('有','有'), ('无','无')])
     immuhistory = forms.ChoiceField(label='免疫治疗史',choices=[('未知','未知'),('有','有'), ('无','无')])
     immudrug = forms.CharField(label='免疫治疗药物',initial='无')
-    immutime = forms.DateTimeField(label='免疫治疗时间',initial=datetime.today,required=False)
+    immutime = forms.DateTimeField(label='免疫治疗时间',initial=datetime.datetime.today,required=False)
     explant = forms.ChoiceField(label='是否有过器官移植',choices=[('未知','未知'),('有','有'), ('无','无')])
-    explanttime = forms.DateTimeField(label='移植时间',initial=datetime.today,required=False)
+    explanttime = forms.DateTimeField(label='移植时间',initial=datetime.datetime.today,required=False)
 
 # class AddProduct(forms.Form):
 #     productid=forms.CharField(label='产品编号')
@@ -84,10 +84,10 @@ tags=['科研','检测']
 #     project=forms.ChoiceField(label='项目编号')
 #     user=forms.ChoiceField(choices=zip(analyst,analyst),label='解读人员')
 
-class Search(forms.Form):
-    patientid=forms.CharField(label='患者编号',required=False)
-    patientanme = forms.CharField(label='患者姓名', required=False)
-    projectid = forms.CharField(label='项目编号', required=False)
+# class Search(forms.Form):
+#     patientid=forms.CharField(label='患者编号',required=False)
+#     patientanme = forms.CharField(label='患者姓名', required=False)
+#     projectid = forms.CharField(label='项目编号', required=False)
 
 yesorno=['未知','无','有']
 genders=['男','女']
@@ -137,8 +137,8 @@ class TaskDistribute(forms.Form):
             choices=[(str(task),str(task.patient)+'|'+str(task.product)) for task in Task.objects(expstatus='上机',analyst=None).all()],
             widget=forms.CheckboxSelectMultiple())
 
-class ProjectID(forms.Form):
-    project=forms.CharField(label='项目编号')
-
-class TaskID(forms.Form):
-    task=forms.CharField(label='任务编号')
+# class ProjectID(forms.Form):
+#     project=forms.CharField(label='项目编号')
+#
+# class TaskID(forms.Form):
+#     task=forms.CharField(label='任务编号')

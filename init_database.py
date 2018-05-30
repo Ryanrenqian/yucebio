@@ -5,13 +5,25 @@ connect('test')
 
 
 # 用户
+from mongoengine import *
+connect('test')
+# Create your models here.
+
+# 群组
+class Group(Document):
+    name=StringField(primary_key=True)
+    def __str__(self):
+        return self.name
+
+# 用户
 class User(Document):
     account=StringField(primary_key=True)
-    name = StringField(null=True)
-    region=StringField(null=True)
-    email=StringField(null=True)
-    telephone=StringField(null=True)
-    department=StringField(null=True)
+    password=StringField()
+    name = StringField()
+    region=StringField()
+    email=StringField()
+    telephone=StringField()
+    group=ReferenceField(Group)
     def __str__(self):
         return self.account
 
@@ -42,7 +54,7 @@ class Patient(Document):
     patientname=StringField(max_length=30)
     tumortype = StringField(null=True)
     age=IntField()
-    gender=StringField()
+    gender=StringField(choices=['female','male'])
     infostatus=StringField(default='无',choices=['有','无'])
     samplestatus = StringField(default='无',choices=['有', '无'])
     taskstatus = StringField(default='无',choices=['有', '无'])
@@ -76,9 +88,10 @@ class Sample(Document):
 
 # 任务
 class Task(Document):
-    product=ReferenceField(Product)
-    patient=ReferenceField(Patient)
-    tissuetype=StringField(null=True)
+    taskid=StringField(primary_key=True)
+    product=ReferenceField(Product,null=True)
+    patient=ReferenceField(Patient,null=True)
+    tumortype=StringField(null=True)
     starttime=DateTimeField(null=True)
     bestuptime=DateTimeField(null=True)
     worstuptime=DateTimeField(null=True)
@@ -94,13 +107,14 @@ class Task(Document):
     data=StringField(null=True)
     report=StringField(null=True)
     info=StringField(null=True)
+    extrainfo=StringField(null=True)
     def __str__(self):
         return str(self.pk)
 
 # 项目
 class Project(Document):
     projectid=StringField(primary_key=True)
-    tag=StringField(default='检测',choices=['科研','检测'])
+    tag=StringField(default='检测',null=True)
     products = ListField(ReferenceField(Product))
     patients= ListField(ReferenceField(Patient))
     tasks=ListField(ReferenceField(Task),null=True)
@@ -190,11 +204,85 @@ class Project(Document):
 #     result=StringField(null=True)
 #     status=StringField(default='待解读',choices=['待解读','解读中','待审核','已完成'])
 
-Patient.drop_collection()
-User.drop_collection()
-Project.drop_collection()
-Task.drop_collection()
-Sample.drop_collection()
+# Lab管理部分
+
+# class Labtask(Document):
+#     task=ReferenceField(Task)
+#     chip=ReferenceField(Chip)
+#     datasize=StringField()
+#     moletag=StringField()
+#     best_xiaji_date=DateTimeField()
+#     latest_xiaji_date=DateTimeField()
+#     shangji_date=DateTimeField()
+#     xiaji_date=DateTimeField()
+#     def __str__(self):
+#         return str(self.project)
+#
+#
+# # 样本管理
+# types='FFPF 血液 血浆 DNA ctDNA RNA 细胞 胸水 腹水 脑脊液 唾液 尿液 口腔拭子 粪便 fgs 干血片 胸水/腹水沉渣(新鲜组织)'.split()
+#
+# class Sample(Document):
+#     sampleid=StringField(primary_key=True)
+#     patient=ReferenceField(Patient)
+#     times = IntField(max_value=9, default=0)
+#     sampletype = StringField(choices=['Tumor', 'Normal'])
+#     tissuetype = StringField(choices=types)
+#     recieve_date = DateTimeField()
+#     detect_date = DateTimeField(null=True)
+#     user = ReferenceField(User,null=True)
+#     status=StringField(choices=['无需反样','未反样','已反样'])
+#     def __str__(self):
+#         return self.sampleid
+# # 实验参数
+#
+# class TiquShiji(Document):
+#     name=StringField(primary_key=True)
+#     def __str__(self):
+#         return self.name
+#
+# class JiankuShiji(Document):
+#     name=StringField(primary_key=True)
+#     def __str__(self):
+#         return self.name
+#
+# class I5(Document):
+#     name=StringField(primary_key=True)
+#
+#
+# # 实验内容
+# class Experiment(Document):
+#     experimentid=StringField(primary_key=True)
+#     task=ReferenceField(Task)
+#
+#
+# ##  分析解读师管理部分
+# class AnaProject(Document):
+#     taskid = StringField(primary_key=True)
+#     project=ReferenceField(Project)
+#     patient=ReferenceField(Patient)
+#     product=ReferenceField(Product)
+#     user=ReferenceField(User)
+#     workspace=StringField(null=True)
+#     samplelist=StringField(null=True)
+#     getsample=StringField(null=True)
+#     generator=StringField(null=True)
+#     pairedlist=StringField(null=True)
+#     config=StringField(null=True)
+#     status=StringField(default='分析中',choices=['分析中','已完成','暂停'])
+#
+# ## report parse
+# class Report(Document):
+#     project=ReferenceField(Project)
+#     user=ReferenceField(User)
+#     result=StringField(null=True)
+#     status=StringField(default='待解读',choices=['待解读','解读中','待审核','已完成'])
+
+# Patient.drop_collection()
+# User.drop_collection()
+# Project.drop_collection()
+# Task.drop_collection()
+# Sample.drop_collection()
 user=User(account='renqian',name='任前',email='renqian@yucebio.com')
 user.save()
 patient=Patient(patientid='000001',patientname='编号001',age=18,gender='女')
@@ -216,5 +304,13 @@ data=pd.read_excel('tmp/批量上传患者信息20180509.xlsx',header=0,dtype=st
 for i in data.index:
     row=data.loc[i].to_dict()
     Patient(**row).save()
-
+# 清理无效数据
+for project in Project.objects().all():
+    if not project.products:
+        #print(project)
+        project.delete()
+for project in Project.objects().all():
+    if not project.patients:
+        #print(project)
+        project.delete()
 
