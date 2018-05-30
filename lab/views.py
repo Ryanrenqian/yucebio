@@ -131,76 +131,97 @@ def reset_task(request,task):
     # else:
     #     return redirect(reverse('lab:task_index', args=['index']))
 
-# 患者列表
-def patient_index(request):
-    if request.session.get('message',None):
-        message=request.session.pop('message')
-    request.session['ref']=reverse('lab:patient_index')
-    columns='患者编号 患者姓名 患者年龄 患者性别 癌种 样本状态 信息状态'.split()
-    request.session['ref'] = reverse('lab:patient_index')
-    # patient_list=Patient.objects().all()
-    # return render(request,'lab/patient/patient.html',locals())
 
-    data=Patient.objects().all().to_json(ensure_ascii=False)
-    return HttpResponse(data)
+# # 患者列表
+# def patient_index(request):
+#     if request.session.get('message',None):
+#         message=request.session.pop('message')
+#     request.session['ref']=reverse('lab:patient_index')
+#     columns='患者编号 患者姓名 患者年龄 患者性别 癌种 样本状态 信息状态'.split()
+#     request.session['ref'] = reverse('lab:patient_index')
+#     # patient_list=Patient.objects().all()
+#     # return render(request,'lab/patient/patient.html',locals())
+#
+#     data=Patient.objects().all().to_json(ensure_ascii=False)
+#     return HttpResponse(data)
+#
+# # 患者详情页
+# def patient_detail(request,patient):
+#     if request.session.get('message',None):
+#         message=request.session.pop('message')
+#     else:
+#         message={}
+#         request.session['message'] = message
+#     request.session['ref']=reverse('lab:patient_detail',args=[patient])
+#     patient=Patient.objects(patientid=patient).first()
+#     patientcolumns='患者编号 患者姓名 年龄 性别 癌肿 操作'.split()
+#     sample_list=Sample.objects(patient=patient).all()
+#     samplecolumns='样本编号 样本类型 样本接受时间 样本状态'.split()
+#     task_list=Task.objects(patient=patient).all()
+#     return render(request,'lab/patient/patient_detail.html',locals())
+#
+# def patient_addsample(request,patient):
+#     if request.session.get('message',None):
+#         message=request.session.pop('message')
+#     else:
+#         message={}
+#         request.session['message']=message
+#     if request.method=='POST':
+#         data=AddSample(request.POST)
+#         if data.is_valid():
+#             try:
+#                 sample=Sample(receivestatus=datetime.datetime.now(),**data.cleaned_data)
+#                 sample.save()
+#                 message['success']='添加样本成功'
+#                 if request.session.get('ref',None):
+#                     return redirect(request.session.pop('ref'))
+#                 else:
+#                     return redirect(reverse('lab:task_index',args=['index']))
+#             except Exception as e:
+#                 message['error']=e
+#         else:
+#             message['error']='请检查表格内容'
+#     url=reverse('lab:patient_addsample',args=[patient])
+#     form=AddSample(initial={'patient':patient})
+#     return render(request,'lab/form.html',locals())
+#
 
-# 患者详情页
-def patient_detail(request,patient):
-    if request.session.get('message',None):
-        message=request.session.pop('message')
-    else:
-        message={}
-        request.session['message'] = message
-    request.session['ref']=reverse('lab:patient_detail',args=[patient])
-    patient=Patient.objects(patientid=patient).first()
-    patientcolumns='患者编号 患者姓名 年龄 性别 癌肿 操作'.split()
-    sample_list=Sample.objects(patient=patient).all()
-    samplecolumns='样本编号 样本类型 样本接受时间 样本状态'.split()
-    task_list=Task.objects(patient=patient).all()
-    return render(request,'lab/patient/patient_detail.html',locals())
 
-def patient_addsample(request,patient):
-    if request.session.get('message',None):
-        message=request.session.pop('message')
-    else:
-        message={}
-        request.session['message']=message
-    if request.method=='POST':
-        data=AddSample(request.POST)
-        if data.is_valid():
-            try:
-                sample=Sample(receivestatus=datetime.datetime.now(),**data.cleaned_data)
-                sample.save()
-                message['success']='添加样本成功'
-                if request.session.get('ref',None):
-                    return redirect(request.session.pop('ref'))
-                else:
-                    return redirect(reverse('lab:task_index',args=['index']))
-            except Exception as e:
-                message['error']=e
-        else:
-            message['error']='请检查表格内容'
-    url=reverse('lab:patient_addsample',args=[patient])
-    form=AddSample(initial={'patient':patient})
-    return render(request,'lab/form.html',locals())
 
 # 样本列表
 def sample_index(request):
-    if request.session.get('message',None):
-        message=request.session.pop('message')
-    request.session['ref']=reverse('lab:sample_index')
-    columns='样本编号 患者 类型 组织类型 接收时间 样本状态 接受者 接受状态'.split()
+    # if request.session.get('message',None):
+    #     message=request.session.pop('message')
+    # request.session['ref']=reverse('lab:sample_index')
+    # columns='样本编号 患者 类型 组织类型 接收时间 样本状态 接受者 接受状态'.split()
     sample_list=Sample.objects().all().to_json(ensure_ascii=False)
     # return render(request,'lab/sample/sample.html',locals())
     return HttpResponse(sample_list)
 
-# 检索样本，患者
-def search(request):
-    if request.session.get('message',None):
-        message=request.session.pop('message')
-    else:
-        message = {}
-    url=reverse('lab:search')
-    if request.method=='POST':
-        return HttpResponse('后面再补充')
+# # 检索样本，患者
+# def search(request):
+#     if request.session.get('message',None):
+#         message=request.session.pop('message')
+#     else:
+#         message = {}
+#     url=reverse('lab:search')
+#     if request.method=='POST':
+#         return HttpResponse('后面再补充')
 
+def sample_add(request):
+    message={}
+    warning=[]
+    if request.method=="POST":
+        data=json.loads(request.body.decode('utf-8'))
+        if len(Patient.objects(pk=data['patient']['patientid']))==0:
+            patient=Patient(**data['patient']).save()
+            for sample in data['samples']:
+                if len(Sample.objects(pk=sample['sampleid']))==0:
+                    sample['patient']=patient
+                    Sample(**sample).save()
+                else:
+                    warning.append(sample['sampleid'])
+            message['warning']="以下样本编号已存在： %s"%','.join(warning)
+        else:
+            message['error']='该患者编号已存在'
+    return HttpResponse(json.dumps(message,ensure_ascii=False))

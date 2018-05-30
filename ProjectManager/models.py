@@ -108,9 +108,10 @@ class Task(Document):
 class Project(Document):
     projectid=StringField(primary_key=True)
     tag=StringField(default='检测',null=True)
-    products = ListField(ReferenceField(Product),null=True)
-    patients= ListField(ReferenceField(Patient),null=True)
-    tasks=ListField(ReferenceField(Task),null=True)
+    products = ListField(ReferenceField(Product),default=[])
+    patients= ListField(ReferenceField(Patient),default=[])
+    tumortype=StringField(null=True)
+    tasks=ListField(ReferenceField(Task),default=[])
     institute=StringField(null=True)
     duty=ReferenceField(User,null=True)
     status=StringField(default='待审查',choice=['待审查','未缴费','已付费/免费','已完成','暂停','已作废'])

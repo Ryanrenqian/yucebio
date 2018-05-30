@@ -68,7 +68,7 @@ class Patient(Document):
         return self.patientid
 
 class Sample(Document):
-    _id=StringField(primary_key=True)
+    sampleid=StringField(primary_key=True)
     patient=ReferenceField(Patient)
     kind=StringField(null=True)
     tissue=StringField(null=True)
@@ -104,23 +104,6 @@ class Task(Document):
     def __str__(self):
         return str(self.pk)
 
-# 项目
-class Project(Document):
-    projectid=StringField(primary_key=True)
-    tag=StringField(default='检测',null=True)
-    products = ListField(ReferenceField(Product))
-    patients= ListField(ReferenceField(Patient))
-    tasks=ListField(ReferenceField(Task),null=True)
-    institute=StringField(null=True)
-    duty=ReferenceField(User,null=True)
-    status=StringField(default='待审查',choice=['待审查','未缴费','已付费/免费','已完成','暂停','已作废'])
-    start_time=DateTimeField(null=True)
-    deadline = DateTimeField(null=True)
-    duration=IntField(null=True)
-    finish=DateTimeField(null=True)
-    delay = StringField(default='否')
-    def __str__(self):
-        return self.pk
 
 
 # Lab管理部分

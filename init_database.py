@@ -117,6 +117,7 @@ class Project(Document):
     tag=StringField(default='检测',null=True)
     products = ListField(ReferenceField(Product))
     patients= ListField(ReferenceField(Patient))
+    tumortype=StringField(null=True)
     tasks=ListField(ReferenceField(Task),null=True)
     institute=StringField(null=True)
     duty=ReferenceField(User,null=True)

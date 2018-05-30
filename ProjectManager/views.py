@@ -95,7 +95,7 @@ def add_project(request):
                 warning.append(patient)
                 patients.remove(patient)
         data['patients']=list(patients)
-        tumortypes=data.pop('tumortype').split()
+        tumortypes=data.get('tumortype').split()
         data['start_time']=datetime.datetime.strptime(data['start_time'],"%Y-%m-%d %H:%M:%S")
         data['deadline']=datetime.datetime.strptime(data['deadline'],"%Y-%m-%d %H:%M:%S")
         # if len(Project.objects(pk=data['projectid']))==0:
@@ -205,8 +205,46 @@ def stop_project(request,project):
 
 # 可能不需要
 
-def project_add_patient(request,project):
-    pass
+def project_addpatient(request):
+    message = {}
+    warning=[]
+    if request.method=="POST":
+        data=json.loads(request.body.decode('utf-8'))
+        project=Project.objects(pk=data['projectid']).first()
+        project.patients.append(project)
+        tumortypes=project.tumortype.split()
+        patients = set(data['patients'].split())
+        for patient in data['patients'].split():
+            if len(Patient.objects(pk=patient)) == 0:
+                warning.append(patient)
+                patients.remove(patient)
+        data['patients'] = list(patients)
+        for product in project.products:
+            for patient in project.patients:
+                if len(tumortypes)!=0:
+                    for tumortype in tumortypes:
+                        patient.modify(taskstatus='有')
+                        taskid = GenerateID(Task)
+                        task=Task.objects(pk=taskid).first()
+                        task.modify(tumortype=tumortype, product=product, patient=patient, status='暂停', expstatus='暂停',
+                                    anastatus='暂停', jiedu_status='暂停', reportstatus='暂停')
+                        project.tasks.append(task)
+                else:
+                    patient.modify(taskstatus='有')
+                    taskid = GenerateID(Task)
+                    task = Task.objects(pk=taskid).first()
+                    task.modify(product=product, patient=patient, status='暂停', expstatus='暂停',
+                                anastatus='暂停', jiedu_status='暂停', reportstatus='暂停')
+                    project.tasks.append(task)
+        project.save()
+        message['success']='保存成功'
+    if len(warning)!=0:
+        message['warning'] = '以下患者出现问题，可能不存在：%s'%(','.join(set(warning)))
+    # else:
+    #     message['warning']='该项目已存在，请刷新获取新的项目编号'
+    # else:
+    #     message['warning']='请检查表格'
+    return HttpResponse(json.dumps(message,ensure_ascii=False))
 
 # 项目内部添加
 # def project_add_task(request,project):
@@ -417,7 +455,7 @@ def add_patient(request):
     # return render(request, 'ProjectManager/form.html', locals())
     return HttpResponse(json.dumps(message,ensure_ascii=False))
 
-def patient_order(request):
+def patient_addtask(request):
     # if request.session.get('message',None):
     #     message=request.session.pop('message')
     # else:
@@ -431,9 +469,6 @@ def patient_order(request):
         projectid = GenerateID(Project)
         data=json.loads(request.body.decode('utf-8'))
         patient = Patient.objects(pk=data['patientid']).first()
-        project = Project.objects(pk=projectid).first()
-        project.patients=[patient.pk]
-        project.save()
         try:
             tasks = []
             starttime = datetime.datetime.now()
@@ -456,14 +491,22 @@ def patient_order(request):
                             extrainfo=data.get('extrainfo','')
                 )
                 # task.save()
+                tasks.append(task)
             # data['patients']=data['patients'].split()
-            project = project.modify(
-                tag=data['tag'],
-                products=data['products'],
-                tasks=tasks,status='已付费',
-                duty=data['account'],
-                start_time=starttime,
-                deadline=prodeadline)
+            project = Project(pk=projectid,
+                              patients=[patient],
+                              products=data['products'],
+                              tasks=tasks,
+                              status='已付费',
+                              duty=data['account'],
+                              start_time=starttime,
+                              deadline=prodeadline,
+                              tag=data['tag']
+                              )
+            project.save()
+            # project = project.modify(
+            #
+            #     )
             message['success'] = '保存成功'
             patient.modify(taskstatus='有')
         except Exception as e:
